@@ -8,6 +8,7 @@ body{
 #list{
   display:flex;
   flex-wrap:wrap;
+  width:100%;
 }
 .actor{
   flex-grow:1;
@@ -139,16 +140,17 @@ var Show=name=>{
 				show.Characters=Array.from(body.children).slice(0,-1).filter(el=>el.tagName=="TABLE").map(el=>{
 					var tds = el.getElementsByTagName("tr")[0].children;
 					var c=tds[1].getElementsByTagName("a")[0];
-					var v=tds[2].getElementsByTagName("tr")[0];
+					var v=Array.from(tds[2].getElementsByTagName("small")).filter(v=>v.textContent=="Japanese").map(v=>v.parentElement.children[0]);
 					if(!c||!v) return 
-					v=v.getElementsByTagName("a")[0];
-					return {
-						Name:c.textContent,
-						CID:exc(c.href),
-						Actor:v.textContent,
-						AID:exc(v.href),
-					};
-				}).filter(v=>v);
+					return v.map(v=>{
+						return {
+							Name:c.textContent,
+							CID:exc(c.href),
+							Actor:v.textContent,
+							AID:exc(v.href),
+						};
+					});
+				}).reduce((a,b)=>a.concat(b),[]).filter(v=>v);
 				return Promise.resolve(show);
 			});
 		}));
@@ -182,7 +184,7 @@ var Show=name=>{
 			return v;
 		}).sort((a,b)=>{
 			return b.Characters.length-a.Characters.length;
-		}).filter(v=>v.Characters.length>=2).forEach(actor=>{
+		}).forEach(actor=>{
 			var el = document.createElement("a");
 			el.href="http://myanimelist.net/people/"+actor.ID;
 			el.className="actor";
